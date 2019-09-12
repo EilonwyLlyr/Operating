@@ -1,0 +1,39 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[]){
+    char text[1024], compress[1024];
+    int len;
+
+    strcpy(text, "11111111111000010101");
+    printf("%s\n", text);
+
+    len = strlen(text);
+    char temp = text[0], maxTemp[32];
+    strcpy(maxTemp, "000000000");
+    strcat(text, maxTemp);
+
+    printf("%s\n", text);
+    int count = 0;
+    char current[32];
+
+    for(int i = 0; i < len; i++){
+        count++;
+        if(temp != text[i]){
+            temp = text[i];
+            strcat(compress, maxTemp);
+        }
+        else{
+            if(count >= 16){
+                if(text[i] == 1)
+                sprintf(current, "+%d+", count);
+                strcpy(maxTemp, current);
+            }
+            else
+                strcat(maxTemp, &text[i]);
+        }
+    }
+
+    printf("%s", compress);
+}
