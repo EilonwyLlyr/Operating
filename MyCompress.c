@@ -59,18 +59,12 @@ int main(int argc, char* argv[]) {
     FILE *fptr1, *fptr2;
     char input[20], output[20];
 
-    printf("Enter name of file to compress:\n");
-    //gets(input);
-
     fptr1 = fopen("source", "r");
 
     if (fptr1 == NULL) {
       printf("Program will now exit.\n");
       exit(EXIT_FAILURE);
     }
-
-    printf("Enter name of target file:\n");
-    //gets(output);
 
     fptr2 = fopen("destination", "w");
 
