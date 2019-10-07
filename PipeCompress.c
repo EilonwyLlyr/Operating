@@ -66,24 +66,28 @@ void child_one(char source[], int p[]){
 
     char c;
     c = fgetc(fp1);
+    //gets the length of the file
     while(c != EOF){
       c = fgetc(fp1);
       counter++;
     }
+    //sends pointer to the start of the file
     rewind(fp1);
+    //creates a buffer the lenth of the file
     char readbuff[counter];
     int index = 0;
     c = fgetc(fp1);
+    //sends the information from the file into the buffer
     while(c != EOF){
       readbuff[index] = c;
       c = fgetc(fp1);
       index++;
     }
-
+    //closes the reading end
     close(p[0]);
-
+    //writes into the pipe
     write(p[1], readbuff, counter);
-
+    //closes the writing end
     close(p[1]);
 
     fclose(fp1);
@@ -94,19 +98,20 @@ void child_one(char source[], int p[]){
 void child_two(char destination[], int p[]){
     FILE *fp2;
     fp2 = fopen(destination, "w+");
-
+    //creates a buffer that can only hold 1024 characters
     char writebuff[1024];
     
     if (fp2 == NULL) {
       printf("Program will now exit.\n");
       exit(EXIT_FAILURE);
     }
-    
+    //closes the writing end
     close(p[1]);
-
+    //reads from the pipe and saves it into the writebuff
     read(p[0], &writebuff, sizeof(writebuff));
-
+    //compresses the file similar to MyCompress
     compressFile(writebuff, fp2);
+    //closes the reading end
     close(p[0]);
     fclose(fp2);
     printf("child two done\n");
@@ -116,7 +121,7 @@ void child_two(char destination[], int p[]){
 int main(int argc, char* argv[]){
 
     int status;
-    
+    //checks to see if argumenrts are passes
     if(argc == 1){
         printf("No arguments passed\n");
     }
@@ -124,34 +129,37 @@ int main(int argc, char* argv[]){
         printf("incuficent arguemnts\n");
     }
     else if(argc == 3){
-
+      //creates two childs and a pipe
         pid_t pid;
         pid_t pid2;
         int p[2];
         if(pipe(p) < 0){
             exit(1);
         }
-
+        //first child is created
         pid = fork();
         if(pid < 0){
             printf("Error: fork failed.\n");
         }
         else if(pid == 0){
+          //sends the source file name and pipe 
             child_one(argv[1], p);
         }
-        
+        //second child is created
         pid2 = fork();
         if(pid2 < 0){
           printf("Error: fork failed.\n");
         }
         else if(pid2 == 0){
+          //waits for child 1 to finish
           wait(&pid);
+          //send the output file name and pipe
           child_two(argv[2], p);
         }
-
+        //closes the pipe on the parents end.
         close(p[0]);
         close(p[1]);
-
+        //waits for child 2 to finish
         waitpid(pid2, &status, WUNTRACED);
         printf("this is parent\n");
         }
