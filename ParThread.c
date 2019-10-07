@@ -3,19 +3,27 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// the output file where the threads will write into
 FILE * fp2;
-int controller = 0;
+//was suppose to control which thread came first, bet kept getting errors
+//int controller = 0;
 
+//a way to pass both the file and file name to the thread
 struct Files{
     FILE * fp;
     char* file;
 };
 
 void *Combine(void * fps){
-    struct Files *newfps = (struct Files*) fps; 
+
+    struct Files *newfps = (struct Files*) fps;
+    //asigns the file and file name
     FILE *chunk = newfps->fp;
     char *name = newfps->file;
     int number = name[6];
+    //was going to use the intenger at the end of the file name to keep track, but kept getting erros
+    
+    //the same as MyCompress
     char c = fgetc(chunk);
     int counter = 1;
     char saved;
@@ -61,13 +69,13 @@ void *Combine(void * fps){
     saved = c;
         c = fgetc(chunk);
     }
-    controller++;
+    //controller++;
     pthread_exit(NULL);
 }
 
 int main(int argc, char *argv[]) {
     FILE * fp1;
-
+    //checks to see if arguments are passed in the command line
     if(argc == 1){
         printf("No arguments passed\n");
     }
@@ -75,6 +83,7 @@ int main(int argc, char *argv[]) {
         printf("Insufficient argument\n");
     }
     else if(argc == 3){
+      //two files, one file opens the source, and the second is to write to the destination
         fp1 = fopen(argv[1], "r");
         if(fp1 == NULL){
             printf("Error Opening file\n");
@@ -85,21 +94,23 @@ int main(int argc, char *argv[]) {
             printf("Error creating file\n");
             exit(EXIT_FAILURE);
         }
-
+        //gets the size of the file
         fseek(fp1, 0L, SEEK_END);
         long int res = ftell(fp1);
         rewind(fp1);
         res = res / 10;
 
+        //creates 10 temporary file names that are the chuncks
         char files[10][260];
         for(int i =0; i < 10; i++){
             sprintf(files[i], "chunck%d", i);
         }
+        //creates 10 temporary files to write into that are the chuncks
         FILE * fpmul[10];
         for(int i = 0; i < 10; i++){
             fpmul[i] = fopen(files[i], "w");
         }
-
+        //chunks the source file into the 10 temporary files
         char c = fgetc(fp1);
         long int counter = 0;
         for(int i = 0; i < 10; i++){
@@ -110,30 +121,35 @@ int main(int argc, char *argv[]) {
             }
             counter = 0;
         }
-
+        //closes the source file and the temporary files.
         fclose(fp1);
         for(int i = 0; i < 10; i++){
             fclose(fpmul[i]);
         }
+        //creates an array of struct Files that were difined to open
+        //the temporary files again as read mode
         struct Files fs[10];
         for(int i = 0; i < 10; i++){
             fs[i].fp = fopen(files[i], "r");
             fs[i].file = files[i];
         }
         
-
+        //creates the 10 threas and sends the struc File acordinly
         pthread_t thread_id[10];
-	    for(int i = 0; i < 10; i++)
+	      for(int i = 0; i < 10; i++)
 	        pthread_create(&thread_id[i], NULL, &Combine, &fs[i]);
-
-	    for(int i = 0; i < 10; i++)
+        
+        //closes the threads 
+	      for(int i = 0; i < 10; i++)
 	        pthread_join(thread_id[i], NULL);
 
-
+        //closes the temporary files and deletes them
         for(int i = 0; i < 10; i++){
             fclose(fs[i].fp);
             remove(files[i]);
         }
     }
+    //errors: only the last chunck seems to get compressed, even though 
+    //all the other chuncks are separated as they should be
 	return 0;
 }
