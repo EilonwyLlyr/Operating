@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//takes input file and sends compresses it to outpute file.
 void compressFile(FILE *fp1, FILE *fp2) {
   char saved, c;
   int counter = 1;
@@ -16,11 +17,11 @@ void compressFile(FILE *fp1, FILE *fp2) {
     if (saved == ' ') {
       putc(' ', fp2);
     }
-
+    //checks if the current character is the same as the last.
     if (saved == c && (saved == '0' || saved == '1')) {
       counter++;
     }
-
+    //when there is a change sends information to the output file
     else {
       if (counter >= 16) {
         if (saved == '0') {
@@ -55,6 +56,7 @@ void compressFile(FILE *fp1, FILE *fp2) {
 
 int main(int argc, char* argv[]) {
     FILE *fp1, *fp2;
+    //checkis to see if argumets were passes in the command line
     if(argc == 1){
         printf("No arguments passed\n");
     }
@@ -62,14 +64,14 @@ int main(int argc, char* argv[]) {
         printf("incuficent arguemnts\n");
     }
     else if(argc == 3){
-
+      //gets the first argument from the command line that is the source file
     fp1 = fopen(argv[1], "r");
 
     if (fp1 == NULL) {
       printf("Program will now exit.\n");
       exit(EXIT_FAILURE);
     }
-
+    //gets the second argument from the command line that is where the source gets compressed
     fp2 = fopen(argv[2], "w+");
 
     if (fp2 == NULL) {
@@ -77,7 +79,7 @@ int main(int argc, char* argv[]) {
       printf("Program will now exit.\n");
       exit(EXIT_FAILURE);
     }
-
+    //compresses
     compressFile(fp1, fp2);
 
     fclose(fp1);
