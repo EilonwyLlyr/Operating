@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void compressFile(FILE *fptr1, FILE *fptr2) {
+void decompressFile(FILE *fptr1, FILE *fptr2) {
   char saved, c;
   int counter = 0;
 
@@ -17,23 +17,27 @@ void compressFile(FILE *fptr1, FILE *fptr2) {
     else if (c == ' ') {
       putc(' ', fptr2);
     }
-
+    //checks if the character is either a - or +
     else if (c == '-') {
       saved = '0';
+      //gets the first intenger after -
       c = fgetc(fptr1);
       char i[32] = "";
       int loc = 0;
+      //will place loop until the next - and place the intenger in the array
       while(c != '-'){
           i[loc] = c;
           loc++;
           c = fgetc(fptr1);
       }
+      //converts array into intenger and places that many 0s
       counter = atoi(i);
       while(counter > 0){
           putc(saved, fptr2);
           counter--;
       }
     }
+    //same as - only for + and 1s
     else if (c == '+'){
         saved = '1';
         c = fgetc(fptr1);
@@ -50,7 +54,7 @@ void compressFile(FILE *fptr1, FILE *fptr2) {
             counter--;
         }
     }
-
+    //will place the contents that are by themselfs into the output file.
     else {
         putc(c, fptr2);
     }
@@ -86,7 +90,7 @@ int main(int argc, char* argv[]) {
       exit(EXIT_FAILURE);
     }
 
-    compressFile(fptr1, fptr2);
+    decompressFile(fptr1, fptr2);
 
     fclose(fptr1);
     fclose(fptr2);
