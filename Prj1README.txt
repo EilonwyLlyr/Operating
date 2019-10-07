@@ -1,4 +1,4 @@
-# Operating
+
 MyCompress - Gets two files from the command line to compress a file containing 1's and 0's and sends to a new file
 MyDecompress - Gets two files from the command line and undos the compression from MyCompress
 ForkCompress - Gets two file from the command line and uses a fork to create a child that uses execl to execute the file MyCompress on the two files
