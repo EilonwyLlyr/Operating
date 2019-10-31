@@ -9,10 +9,25 @@ sem_t bufsize;
 pthread_mutex_t buflock;
 
 void* Producer(){
-
+    item next_produced;
+    while (true) {
+        /* produce an item in next produced */
+        while(((in + 1) % MAX) == out)
+            ; /* do nothing */
+        buffer[in] = next_produced;
+        in = (in + 1) % MAX;
+    }
 }
 void* Consumer(){
+    item next_consumed;
+    while (true) {
+            while (in == out)
+                    ; /* do nothing */
+            next_consumed = buffer[out];
+            out = (out + 1) % MAX;
 
+            /* consume the item in next consumed */
+    }
 }
 int main(int argc, char *argv[])
 {
