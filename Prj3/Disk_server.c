@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <time.h>
+#include <ctype.h>
 #define BLOCKSIZE 128;
 
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -15,6 +16,7 @@ int sp;
 int track;
 int sector;
 int blocks;
+FILE *fptr = NULL;
 
 void *reverse(void *arg)
 {
@@ -29,7 +31,8 @@ void *reverse(void *arg)
         pthread_exit(NULL);
     }
     char *buff = buffer;
-    if(strcmp(buff, "I\n") == 0){
+    if (strcmp(buff, "I\n") == 0)
+    {
         char tracks[8];
         char sectors[8];
         sprintf(tracks, "%d", track);
@@ -43,9 +46,109 @@ void *reverse(void *arg)
         pthread_mutex_unlock(&lock);
         close(newSocket);
         pthread_exit(NULL);
-
     }
-    else{
+    char *token = strtok(buff, " ");
+    printf("%s\n", token);
+    char *elem[10];
+    int i = 0;
+    while (i < 5)
+    {
+        elem[i] = token;
+        i++;
+        if(i < 4)
+        token = strtok(NULL, " ");
+        if(i == 4)
+        token = strtok(NULL, "\n");
+    }
+
+    if (strcmp(elem[0], "R") == 0)
+    {
+        int tnum = atoi(elem[1]);
+        if (tnum < track)
+        {
+            int snum = atoi(elem[2]);
+            if (snum < sector)
+            {
+                char mess[128] = {0};
+                int bnum = (tnum * track + snum) * 128;
+                fptr = fopen("disk.txt", "r");
+                int index = 0;
+                for(index < bnum){
+                    
+                    index++;
+                }
+
+
+                fclose(fptr);
+                strcpy(buffer, "");
+                pthread_mutex_unlock(&lock);
+                close(newSocket);
+                pthread_exit(NULL);
+            }
+            else
+            {
+                write(copy, "Invalid command", 16);
+                strcpy(buffer, "");
+                pthread_mutex_unlock(&lock);
+                close(newSocket);
+                pthread_exit(NULL);
+            }
+        }
+        else
+        {
+            write(copy, "Invalid command", 16);
+            strcpy(buffer, "");
+            pthread_mutex_unlock(&lock);
+            close(newSocket);
+            pthread_exit(NULL);
+        }
+    }
+    else if (strcmp(elem[0], "W") == 0)
+    {
+        int tnum = atoi(elem[1]);
+        if (tnum < track)
+        {
+            int snum = atoi(elem[2]);
+            if (snum < sector)
+            {
+                int length = atoi(elem[3]);
+                if (length < 128 && strlen(elem[4]) < 128)
+                {
+                    write(copy, elem[4], 128);
+                    strcpy(buffer, "");
+                    pthread_mutex_unlock(&lock);
+                    close(newSocket);
+                    pthread_exit(NULL);
+                }
+                else
+                {
+                    write(copy, "Invalid command", 16);
+                    strcpy(buffer, "");
+                    pthread_mutex_unlock(&lock);
+                    close(newSocket);
+                    pthread_exit(NULL);
+                }
+            }
+            else
+            {
+                write(copy, "Invalid command", 16);
+                strcpy(buffer, "");
+                pthread_mutex_unlock(&lock);
+                close(newSocket);
+                pthread_exit(NULL);
+            }
+        }
+        else
+        {
+            write(copy, "Invalid command", 16);
+            strcpy(buffer, "");
+            pthread_mutex_unlock(&lock);
+            close(newSocket);
+            pthread_exit(NULL);
+        }
+    }
+    else
+    {
         write(copy, "Invalid command", 16);
         strcpy(buffer, "");
         pthread_mutex_unlock(&lock);
@@ -67,7 +170,13 @@ int main(int argc, char *argv[])
         track = atoi(argv[2]);
         sector = atoi(argv[3]);
         blocks = track * sector;
-
+        fptr = fopen("disk.txt", "w");
+        int filesize = blocks * BLOCKSIZE;
+        for (int i = 0; i < filesize; i++)
+        {
+            fprintf(fptr, "%d", 0);
+        }
+        fclose(fptr);
         if ((server = socket(AF_INET6, SOCK_STREAM, 0)) == 0)
         {
             perror("socket failed");
