@@ -55,10 +55,10 @@ void *reverse(void *arg)
     {
         elem[i] = token;
         i++;
-        if(i < 4)
-        token = strtok(NULL, " ");
-        if(i == 4)
-        token = strtok(NULL, "\n");
+        if (i < 4)
+            token = strtok(NULL, " ");
+        if (i == 4)
+            token = strtok(NULL, "\n");
     }
 
     if (strcmp(elem[0], "R") == 0)
@@ -73,12 +73,16 @@ void *reverse(void *arg)
                 int bnum = (tnum * track + snum) * 128;
                 fptr = fopen("disk.txt", "r");
                 int index = 0;
-                for(index < bnum){
-                    
+                while (index < bnum)
+                {
+                    fgetc(fptr);
                     index++;
                 }
-
-
+                for (int i = 0; i < 128; i++)
+                {
+                    mess[i] = getc(fptr);
+                }
+                write(copy, mess, 128);
                 fclose(fptr);
                 strcpy(buffer, "");
                 pthread_mutex_unlock(&lock);
@@ -114,7 +118,18 @@ void *reverse(void *arg)
                 int length = atoi(elem[3]);
                 if (length < 128 && strlen(elem[4]) < 128)
                 {
-                    write(copy, elem[4], 128);
+                    int bnum = (tnum * track + snum) * 128;
+                    fptr = fopen("disk.txt", "r+");
+                    int index = 0;
+                    while (index < bnum)
+                    {
+                        fgetc(fptr);
+                        index++;
+                    }
+                    fputs(elem[4], fptr);
+
+                    write(copy, "Message done", 128);
+                    fclose(fptr);
                     strcpy(buffer, "");
                     pthread_mutex_unlock(&lock);
                     close(newSocket);
